@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Two Canvases with Different Backgrounds</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #canvasContainer {
+      display: flex;
+      gap: 20px;
+    }
+    input {
+      width: 300px;
+      font-size: 18px;
+      padding: 8px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+<input id="userText" type="text" value="Write your slogan here" placeholder="Write your slogan here">
+
+<div id="canvasContainer">
+  <canvas id="canvas1" width="300" height="400"></canvas>
+  <canvas id="canvas2" width="300" height="400"></canvas>
+</div>
+
+<script>
+const input = document.getElementById('userText');
+
+const canvas1 = document.getElementById('canvas1');
+const ctx1 = canvas1.getContext('2d');
+
+const canvas2 = document.getElementById('canvas2');
+const ctx2 = canvas2.getContext('2d');
+
+const bg1 = new Image();
+bg1.src = 'https://media.istockphoto.com/id/618654170/photo/white-board-placard.jpg?s=612x612&w=0&k=20&c=bq-8gbmCBUUXrCw9GMe-T4GwGqFZsEE3VLsS9fvNVhA=';
+
+const bg2 = new Image();
+bg2.src = 'https://media.istockphoto.com/id/1409624060/vector/abstract-white-and-gray-color-modern-design-stripe-background-with-geometric-shape-vector.jpg?s=2048x2048&w=is&k=20&c=YMna0ycpvYVJZTW8qbyq37odMZ_4R5uQKXYjeUTVmgw=';
+
+let bg1Loaded = false;
+let bg2Loaded = false;
+
+// Draw both canvases once backgrounds are loaded
+bg1.onload = () => {
+  bg1Loaded = true;
+  if(bg2Loaded) drawAll();
+}
+bg2.onload = () => {
+  bg2Loaded = true;
+  if(bg1Loaded) drawAll();
+}
+
+input.addEventListener('input', drawAll);
+
+function drawAll() {
+  drawCanvas(ctx1, bg1);
+  drawCanvas(ctx2, bg2);
+}
+
+function drawCanvas(ctx, bg) {
+  const canvas = ctx.canvas;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+
+  const maxWidth = 250;
+  const maxHeight = 300;
+  const lineHeight = 90;
+  const x = canvas.width / 2;
+  let y = (canvas.height - maxHeight) / 2 + lineHeight / 2;
+
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 80px "Patrick Hand", cursive';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const lines = getWrappedText(ctx, input.value, maxWidth);
+
+  for (let i = 0; i < lines.length; i++) {
+    if (y + i * lineHeight > (canvas.height + maxHeight) / 2) break;
+    ctx.fillText(lines[i], x, y + i * lineHeight);
+  }
+}
+
+function getWrappedText(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + (line === '' ? '' : ' ') + words[n];
+    const metrics = ctx.measureText(testLine);
+    if (metrics.width > maxWidth && line !== '') {
+      lines.push(line);
+      line = words[n];
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+  return lines;
+}
+</script>
+
+</body>
+</html>
